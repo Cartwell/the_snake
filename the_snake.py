@@ -177,7 +177,10 @@ def main():
         if snake.get_head_position() == apple.position:
             snake.growth()
             apple.vanish()
-            apple.randomize_position()
+            while True:
+                apple.randomize_position()
+                if apple.randomize_position() not in snake.positions:
+                    break
         if snake.get_head_position() in snake.positions[1:]:
             screen.fill(BOARD_BACKGROUND_COLOR)
             snake.reset()
