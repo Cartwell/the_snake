@@ -60,18 +60,24 @@ class Apple(GameObject):
         self.body_color = APPLE_COLOR
         self.position = self.randomize_position()
 
-    def randomize_position(self):
-        """Метод для генерации яблока в случайной позиции на поле."""
-        self.position = (
-            (randint(0, GRID_WIDTH - 1) * GRID_SIZE),
-            (randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
-        )
+    def randomize_position(self, snake=None):
+        """Метод для генерации яблока в случайной позиции на поле,
+        с учетом положения змейки.
+        """
+        if snake:
+            while True:
+                self.position = (
+                    (randint(0, GRID_WIDTH - 1) * GRID_SIZE),
+                    (randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
+                )
+                if self.position not in snake:
+                    break
+        else:
+            self.position = (
+                (randint(0, GRID_WIDTH - 1) * GRID_SIZE),
+                (randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
+            )
         return self.position
-
-    #def vanish(self):
-    #    """Метод, убирающий яблоко с поля."""
-    #    place = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
-    #    pygame.draw.rect(screen, BOARD_BACKGROUND_COLOR, place)
 
     def draw(self):
         """Метод для отрисовки яблока на поле."""
@@ -101,7 +107,8 @@ class Snake(GameObject):
         head_x, head_y = self.get_head_position()
         dx, dy = self.direction
         new_head_position = (
-            (head_x + dx * GRID_SIZE) % SCREEN_WIDTH, (head_y + dy * GRID_SIZE) % SCREEN_HEIGHT
+            (head_x + dx * GRID_SIZE) % SCREEN_WIDTH,
+            (head_y + dy * GRID_SIZE) % SCREEN_HEIGHT
         )
         self.positions.insert(0, new_head_position)
         if len(self.positions) > self.length:
@@ -112,8 +119,8 @@ class Snake(GameObject):
         self.length += 1
 
     def reset(self):
-        """Метод для обнуления прогресса и возвращения змейки в
-        исходное состояние
+        """Метод для обнуления прогресса и установления змейки в
+        исходное состояние.
         """
         self.length = 1
         self.positions = [self.position]
@@ -131,7 +138,10 @@ class Snake(GameObject):
             pygame.draw.rect(screen, self.body_color, rect)
             pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
-        head_rect = pygame.Rect(self.get_head_position(), (GRID_SIZE, GRID_SIZE))
+        head_rect = pygame.Rect(
+            self.get_head_position(),
+            (GRID_SIZE, GRID_SIZE)
+        )
         pygame.draw.rect(screen, self.body_color, head_rect)
         pygame.draw.rect(screen, BORDER_COLOR, head_rect, 1)
 
@@ -172,17 +182,11 @@ def main():
         snake.update_direction()
         if snake.get_head_position() == apple.position:
             snake.growth()
-            while True:
-                apple.randomize_position()
-                if apple.randomize_position() not in snake.positions:
-                    break
+            apple.randomize_position(snake.positions)
         elif snake.get_head_position() in snake.positions[4:]:
             screen.fill(BOARD_BACKGROUND_COLOR)
             snake.reset()
-            while True:
-                apple.randomize_position()
-                if apple.randomize_position() not in snake.positions:
-                    break
+            apple.randomize_position(snake.positions)
         pygame.display.update()
 
 
