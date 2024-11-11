@@ -7,6 +7,7 @@ SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
 GRID_SIZE = 20
 GRID_WIDTH = SCREEN_WIDTH // GRID_SIZE
 GRID_HEIGHT = SCREEN_HEIGHT // GRID_SIZE
+GRID_CENTER = ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))
 
 # Направления движения:
 UP = (0, -1)
@@ -44,12 +45,11 @@ class GameObject:
     """Общее описание экземпляров классов."""
 
     def __init__(self):
-        self.position = ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))
+        self.position = GRID_CENTER
         self.body_color = None
 
     def draw(self):
         """Определяем метод для отрисовки объектов на поле."""
-        pass
 
 
 class Apple(GameObject):
@@ -68,10 +68,10 @@ class Apple(GameObject):
         )
         return self.position
 
-    def vanish(self):
-        """Метод, убирающий яблоко с поля."""
-        place = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
-        pygame.draw.rect(screen, BOARD_BACKGROUND_COLOR, place)
+    #def vanish(self):
+    #    """Метод, убирающий яблоко с поля."""
+    #    place = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
+    #    pygame.draw.rect(screen, BOARD_BACKGROUND_COLOR, place)
 
     def draw(self):
         """Метод для отрисовки яблока на поле."""
@@ -85,9 +85,7 @@ class Snake(GameObject):
 
     def __init__(self):
         super().__init__()
-        self.positions = [self.position]
-        self.length = 1
-        self.direction = RIGHT
+        self.reset()
         self.next_direction = None
         self.body_color = SNAKE_COLOR
         self.last = None
@@ -102,14 +100,12 @@ class Snake(GameObject):
         """Метод, описывающий логику движения змейки."""
         head_x, head_y = self.get_head_position()
         dx, dy = self.direction
-        new_head = (head_x + dx * GRID_SIZE, head_y + dy * GRID_SIZE)
         new_head_position = (
-            new_head[0] % SCREEN_WIDTH, new_head[1] % SCREEN_HEIGHT
+            (head_x + dx * GRID_SIZE) % SCREEN_WIDTH, (head_y + dy * GRID_SIZE) % SCREEN_HEIGHT
         )
         self.positions.insert(0, new_head_position)
         if len(self.positions) > self.length:
-            self.last = self.positions[-1]
-            self.positions.pop(-1)
+            self.last = self.positions.pop()
 
     def growth(self):
         """Метод для увеличения максимальной длины змейки."""
@@ -135,7 +131,7 @@ class Snake(GameObject):
             pygame.draw.rect(screen, self.body_color, rect)
             pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
-        head_rect = pygame.Rect(self.positions[0], (GRID_SIZE, GRID_SIZE))
+        head_rect = pygame.Rect(self.get_head_position(), (GRID_SIZE, GRID_SIZE))
         pygame.draw.rect(screen, self.body_color, head_rect)
         pygame.draw.rect(screen, BORDER_COLOR, head_rect, 1)
 
@@ -176,12 +172,11 @@ def main():
         snake.update_direction()
         if snake.get_head_position() == apple.position:
             snake.growth()
-            apple.vanish()
             while True:
                 apple.randomize_position()
                 if apple.randomize_position() not in snake.positions:
                     break
-        if snake.get_head_position() in snake.positions[1:]:
+        elif snake.get_head_position() in snake.positions[4:]:
             screen.fill(BOARD_BACKGROUND_COLOR)
             snake.reset()
             while True:
