@@ -55,29 +55,23 @@ class GameObject:
 class Apple(GameObject):
     """Объявляем дочерний класс - Яблоко."""
 
-    def __init__(self):
+    def __init__(self, occupied_positions=None):
         super().__init__()
+        self.randomize_position(occupied_positions)
         self.body_color = APPLE_COLOR
-        self.position = self.randomize_position()
 
-    def randomize_position(self, snake=None):
-        """Метод для генерации яблока в случайной позиции на поле,
-        с учетом положения змейки.
+    def randomize_position(self, occupied_positions):
+        """Метод для генерации яблока в случайной позиции,
+        с учетом положения объектов на поле.
         """
-        if snake:
-            while True:
-                self.position = (
-                    (randint(0, GRID_WIDTH - 1) * GRID_SIZE),
-                    (randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
-                )
-                if self.position not in snake:
-                    break
-        else:
+        occupied_positions = occupied_positions or []
+        while True:
             self.position = (
                 (randint(0, GRID_WIDTH - 1) * GRID_SIZE),
                 (randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
             )
-        return self.position
+            if self.position not in occupied_positions:
+                break
 
     def draw(self):
         """Метод для отрисовки яблока на поле."""
@@ -170,9 +164,8 @@ def handle_keys(game_object):
 def main():
     """Функция, описывающая логику игры"""
     pygame.init()
-    apple = Apple()
     snake = Snake()
-
+    apple = Apple(snake.positions)
     while True:
         clock.tick(SPEED)
         handle_keys(snake)
